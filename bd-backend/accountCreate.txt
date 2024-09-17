@@ -1,0 +1,60 @@
+-- Insert data from report_data_call, filling in peer_group using lookup_bank_peer
+INSERT INTO public.report_data (date, bank_id, peer_group, metric, name, value, section)
+SELECT
+    call.date,
+    call.bank_id,
+    COALESCE(peer.peer_group, NULL) AS peer_group,
+    call.metric,
+    call.name,
+    call.value,
+    call.section
+FROM public.report_data_call AS call
+LEFT JOIN public.lookup_bank_peer AS peer
+    ON call.bank_id = peer.bank_id
+    AND peer.is_default = TRUE
+WHERE call.bank_id = 999935;
+
+-- Insert data from report_data_ranks (already has bank_id and peer_group)
+INSERT INTO public.report_data (date, bank_id, peer_group, metric, name, value, section)
+SELECT
+    ranks.date,
+    ranks.bank_id,
+    ranks.peer_group,
+    ranks.metric,
+    ranks.name,
+    ranks.value,
+    ranks.section
+FROM public.report_data_ranks AS ranks
+WHERE ranks.bank_id = 999935;
+
+-- Insert data from report_data_ratios, filling in peer_group using lookup_bank_peer
+INSERT INTO public.report_data (date, bank_id, peer_group, metric, name, value, section)
+SELECT
+    ratios.date,
+    ratios.bank_id,
+    COALESCE(peer.peer_group, NULL) AS peer_group,
+    ratios.metric,
+    ratios.name,
+    ratios.value,
+    ratios.section
+FROM public.report_data_ratios AS ratios
+LEFT JOIN public.lookup_bank_peer AS peer
+    ON ratios.bank_id = peer.bank_id
+    AND peer.is_default = TRUE
+WHERE ratios.bank_id = 999935;
+
+-- Insert data from report_data_stats, filling in bank_id using lookup_bank_peer
+INSERT INTO public.report_data (date, bank_id, peer_group, metric, name, value, section)
+SELECT
+    stats.date,
+    COALESCE(peer.bank_id, NULL) AS bank_id,
+    stats.peer_group,
+    stats.metric,
+    stats.name,
+    stats.value,
+    stats.section
+FROM public.report_data_stats AS stats
+LEFT JOIN public.lookup_bank_peer AS peer
+    ON stats.peer_group = peer.peer_group
+    AND peer.is_default = TRUE
+WHERE peer.bank_id = 999935;
